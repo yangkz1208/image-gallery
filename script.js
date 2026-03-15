@@ -2,21 +2,16 @@
 const CONFIG = {
     githubUsername: 'yangkz1208', // 替换为你的GitHub用户名
     repoName: 'image-gallery', // 替换为你的图片仓库名
-    token: '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', // 替换为第一步生成的Token
+    token: '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', // 替换为你的GitHub Token
     cdnPrefix: 'https://cdn.jsdelivr.net/gh/' // jsDelivr CDN前缀（无需修改）
 };
 
 // ========== 页面加载完成后初始化 ==========
 document.addEventListener('DOMContentLoaded', () => {
-    // 加载所有图片
     loadAllImages();
-    // 绑定拖传事件
     bindDropAreaEvents();
-    // 绑定文件选择事件
     bindFileInputEvent();
-    // 绑定分类筛选事件
     bindCategoryFilterEvent();
-    // 绑定大图预览关闭事件
     bindModalCloseEvent();
 });
 
@@ -26,8 +21,8 @@ async function loadAllImages() {
     imageGrid.innerHTML = '<div class="col-span-full text-center text-gray-500"><span class="loading mr-2"></span>加载中...</div>';
 
     try {
-        // 1. 获取仓库所有文件（按分类文件夹）
-        const categories = ['wallpaper', 'photo', 'avatar'];
+        // 1. 修改为你的中文分类文件夹名（核心！）
+        const categories = ['他人', '好图', '网图', '花草', '风景'];
         let allImages = [];
 
         for (const category of categories) {
@@ -77,11 +72,13 @@ function createImageCard(image) {
     card.className = 'image-card';
     card.dataset.category = image.category;
 
-    // 分类标签样式映射
+    // 3. 修改为中文分类的标签样式（核心！）
     const categoryTags = {
-        wallpaper: { text: '壁纸', bg: 'bg-blue-100', textColor: 'text-blue-600' },
-        photo: { text: '照片', bg: 'bg-green-100', textColor: 'text-green-600' },
-        avatar: { text: '头像', bg: 'bg-purple-100', textColor: 'text-purple-600' }
+        他人: { text: '他人', bg: 'bg-blue-100', textColor: 'text-blue-600' },
+        好图: { text: '好图', bg: 'bg-green-100', textColor: 'text-green-600' },
+        网图: { text: '网图', bg: 'bg-yellow-100', textColor: 'text-yellow-600' },
+        花草: { text: '花草', bg: 'bg-pink-100', textColor: 'text-pink-600' },
+        风景: { text: '风景', bg: 'bg-purple-100', textColor: 'text-purple-600' }
     };
     const tagStyle = categoryTags[image.category];
 
@@ -206,7 +203,8 @@ function handleDrop(e) {
 // ========== 工具函数：处理上传文件 ==========
 async function handleFiles(files) {
     const categorySelect = document.getElementById('categorySelect');
-    const selectedCategory = categorySelect.value === 'all' ? 'wallpaper' : categorySelect.value;
+    // 4. 修改默认上传分类为中文（核心！）
+    const selectedCategory = categorySelect.value === 'all' ? '好图' : categorySelect.value;
     const dropArea = document.getElementById('dropArea');
 
     // 遍历文件并上传
