@@ -1,0 +1,72 @@
+/* 自定义背景壁纸（替换为你的壁纸URL，建议用jsDelivr加速后的地址） */
+body {
+    background-image: url('https://cdn.jsdelivr.net/gh/yangkz1208/image-gallery/bg.jpg');
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center;
+    /* 背景半透明遮罩，保证文字清晰 */
+    background-color: rgba(255, 255, 255, 0.85);
+    background-blend-mode: overlay;
+}
+
+/* 图片卡片样式 */
+.image-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.image-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+.image-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.image-card .card-footer {
+    padding: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.image-card .category-tag {
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: #e1f5fe;
+    color: #0288d1;
+}
+
+.image-card .download-btn {
+    color: #2196f3;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.image-card .download-btn:hover {
+    color: #1976d2;
+}
+
+/* 加载中样式 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #fff;
+    border-radius: 50%;
+    border-top-color: #2196f3;
+    animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
