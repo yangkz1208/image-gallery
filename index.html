@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>杨凯哲的图片库</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入图标库 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <!-- 引入自定义样式 -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="min-h-screen">
+    <!-- 顶部导航栏 -->
+    <header class="bg-white/80 backdrop-blur-sm shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-600">杨凯哲的图片库</h1>
+            <div class="flex items-center gap-4">
+                <!-- 返回文件夹按钮（默认隐藏） -->
+                <button id="backToFolders" class="hidden px-3 py-2 border rounded-lg hover:bg-gray-100 transition">
+                    <i class="fa fa-arrow-left mr-2"></i>返回文件夹
+                </button>
+                <!-- 上传按钮（支持文件夹上传） -->
+                <label for="fileInput" class="cursor-pointer bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                    <i class="fa fa-upload mr-2"></i>上传文件/文件夹
+                </label>
+                <input type="file" id="fileInput" class="hidden" multiple accept="image/*,.dng" webkitdirectory directory>
+            </div>
+        </div>
+    </header>
+
+    <!-- 拖传区域 -->
+    <div id="dropArea" class="container mx-auto px-4 py-8 border-2 border-dashed border-blue-500 rounded-lg my-6 text-center py-16 hover:bg-blue-50/80 transition bg-white/80 backdrop-blur-sm">
+        <i class="fa fa-cloud-upload text-5xl text-blue-500 mb-4"></i>
+        <p class="text-xl text-gray-700">拖入图片/文件夹到此处上传，或点击上方「上传文件/文件夹」按钮</p>
+        <p class="text-sm text-gray-500 mt-2">支持JPG/PNG/WebP/DNG等图片格式，无大小/数量限制</p>
+    </div>
+
+    <!-- 文件夹展示区域（默认显示） -->
+    <div id="folderGrid" class="container mx-auto px-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 my-8">
+            <!-- 文件夹会通过JS动态加载 -->
+            <div class="text-center text-gray-500 py-10 bg-white/70 rounded-lg">
+                暂无文件夹，上传文件后将自动创建分类文件夹
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片展示区域（默认隐藏） -->
+    <div id="imageGrid" class="container mx-auto px-4 hidden">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 my-8">
+            <!-- 图片会通过JS动态加载 -->
+        </div>
+    </div>
+
+    <!-- 大图预览弹窗 -->
+    <div id="previewModal" class="fixed inset-0 bg-black/80 z-90 hidden flex items-center justify-center">
+        <button id="closeModal" class="absolute top-4 right-6 text-white text-4xl hover:text-gray-300 transition">×</button>
+        <img id="previewImage" class="max-w-[90%] max-h-[90vh]" src="" alt="大图预览">
+    </div>
+
+    <!-- 引入核心功能JS -->
+    <script src="script.js"></script>
+</body>
+</html>
