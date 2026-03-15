@@ -2,7 +2,7 @@
 const CONFIG = {
     githubUsername: 'yangkz1208', // 你的GitHub用户名
     repoName: 'image-gallery', // 你的图片仓库名
-    token: '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', // 你的GitHub Token
+    token: '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', // 你的GitHub Token
     cdnPrefix: 'https://cdn.jsdelivr.net/gh/', // jsDelivr CDN前缀
     currentFolder: '' // 当前选中的文件夹（空表示根目录/文件夹列表）
 };
