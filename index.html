@@ -1,57 +1,604 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>个人图片库</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>私人图库 | Image Gallery</title>
+    <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body {
+            font-family: "Microsoft YaHei", sans-serif;
+            color: #333;
+            overflow: hidden;
+        }
+        .bg-container {
+            position: fixed;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            z-index: -1;
+        }
+        /* ==================== 登录页面 ==================== */
+        #login-page {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.4);
+            z-index: 100;
+        }
+        .login-box {
+            width: 380px;
+            padding: 40px 30px;
+            background: rgba(255,255,255,0.95);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+        .login-box h1 { margin-bottom: 8px; font-size: 24px; }
+        .login-box p { color: #666; margin-bottom: 20px; }
+        #password-input {
+            width: 100%;
+            padding: 14px;
+            margin: 20px 0;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        #login-btn, #visitor-mode {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        #login-btn {
+            background: #0066cc;
+            color: white;
+        }
+        #login-btn:hover { background: #0055aa; }
+        #visitor-mode {
+            background: #666;
+            color: white;
+        }
+        .login-tips { font-size: 13px; color: #999; }
+
+        /* ==================== 主页面 ==================== */
+        #main-page {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+        }
+        header {
+            padding: 15px 30px;
+            background: rgba(255,255,255,0.9);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #top-specified-image {
+            height: 60px;
+            border-radius: 8px;
+        }
+        .info {
+            text-align: right;
+        }
+        .daily-word {
+            font-size: 15px;
+            color: #0066cc;
+            cursor: pointer;
+        }
+        .folders {
+            flex: 1;
+            padding: 30px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+        .folder-card {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 12px;
+            border: 2px solid #eee;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .folder-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* ==================== 文件夹详情页 ==================== */
+        #folder-detail {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.95);
+            display: none;
+            flex-direction: column;
+        }
+        #folder-detail.active { display: flex; }
+        #back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background: #fff;
+            color: #333;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #folder-title {
+            color: white;
+            text-align: center;
+            padding: 70px 20px 20px;
+            font-size: 28px;
+        }
+        #images-grid {
+            flex: 1;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 15px;
+            overflow-y: auto;
+        }
+        .image-item {
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            border: 3px solid transparent;
+        }
+        .image-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .image-item.selected {
+            border-color: #0066cc;
+        }
+        .image-item[data-locked="true"]::after {
+            content: "🔒";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        /* ==================== 管理面板 ==================== */
+        #manage-panel {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.95);
+            padding: 12px 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            display: none;
+            gap: 10px;
+            z-index: 200;
+        }
+        #manage-panel.active { display: flex; }
+        #manage-panel button {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        #download-selected { background:#28a745; color:white; }
+        #delete-selected { background:#dc3545; color:white; }
+        #select-all { background:#17a2b8; color:white; }
+        #lock-selected { background:#ffc107; color:#333; }
+        #cancel-select { background:#6c757d; color:white; }
+    </style>
 </head>
 <body>
-  <div class="bg-container"></div>
 
-  <!-- 登录页 -->
-  <div id="login-page" class="page active">
-    <div class="daily-word">加载中...</div>
-    <div class="password-container">
-      <input type="password" id="password-input" placeholder="请输入密码" class="password-input">
-      <div class="password-actions">
-        <span id="visitor-mode" class="action-text">访客模式</span>
-      </div>
-    </div>
-  </div>
+<div class="bg-container"></div>
 
-  <!-- 主内容页 -->
-  <div id="main-page" class="page">
-    <div class="top-bar">
-      <span id="total-images">图片总数：0</span>
-      <span id="current-time">加载中...</span>
+<!-- ==================== 登录页面 ==================== -->
+<div id="login-page" class="active">
+    <div class="login-box">
+        <h1>管理员登录</h1>
+        <p>请输入密码进入管理模式</p>
+        <input id="password-input" type="password" placeholder="输入管理员密码" autocomplete="off">
+        <button id="login-btn">登录</button>
+        <button id="visitor-mode">访客模式</button>
+        <div class="login-tips">提示：连续5次输错密码将锁定5分钟</div>
     </div>
-    <div class="top-image-container">
-      <img id="top-specified-image" src="" alt="指定图片" class="top-image">
-    </div>
-    <div class="folders-grid">
-  <div class="folder-card" data-folder="他人"><div class="folder-name">他人</div></div>
-  <div class="folder-card" data-folder="好图"><div class="folder-name">好图</div></div>
-  <div class="folder-card" data-folder="网图"><div class="folder-name">网图</div></div>
-  <div class="folder-card" data-folder="花草"><div class="folder-name">花草</div></div>
-  <div class="folder-card" data-folder="风景"><div class="folder-name">风景</div></div>
 </div>
-    <div id="folder-detail" class="folder-detail">
-      <button id="back-btn" class="back-btn">← 返回</button>
-      <div class="folder-title" id="folder-title"># 文件夹A</div>
-      <div class="images-grid" id="images-grid"></div>
-      <div id="manage-panel" class="manage-panel">
-        <button class="manage-btn" id="download-selected">下载</button>
-        <button class="manage-btn" id="delete-selected">删除</button>
-        <button class="manage-btn" id="select-all">全选</button>
-        <button class="manage-btn" id="lock-selected">锁定</button>
-        <button class="manage-btn" id="cancel-select">取消</button>
-      </div>
-    </div>
-  </div>
 
-  <script src="script.js"></script>
+<!-- ==================== 主页面 ==================== -->
+<div id="main-page">
+    <header>
+        <img id="top-specified-image" src="assets/top-image.jpg" alt="顶部图片">
+        <div class="info">
+            <div class="daily-word">生活明朗，万物可爱</div>
+            <div id="current-time"></div>
+            <div id="total-images">图片总数：0</div>
+        </div>
+    </header>
+
+    <div class="folders">
+        <div class="folder-card" data-folder="他人">他人</div>
+        <div class="folder-card" data-folder="好图">好图</div>
+        <div class="folder-card" data-folder="网图">网图</div>
+        <div class="folder-card" data-folder="花草">花草</div>
+        <div class="folder-card" data-folder="风景">风景</div>
+    </div>
+</div>
+
+<!-- ==================== 文件夹详情页 ==================== -->
+<div id="folder-detail">
+    <button id="back-btn">← 返回</button>
+    <h2 id="folder-title"># 文件夹</h2>
+    <div id="images-grid"></div>
+</div>
+
+<!-- ==================== 管理面板 ==================== -->
+<div id="manage-panel">
+    <button id="download-selected">📥 下载选中</button>
+    <button id="delete-selected">🗑 删除选中</button>
+    <button id="select-all">✅ 全选</button>
+    <button id="lock-selected">🔒 锁定选中</button>
+    <button id="cancel-select">取消</button>
+</div>
+
+<script>
+// ==================== 配置 ====================
+const CONFIG = {
+    owner: "yangkzl28",
+    repo: "image-gallery",
+    token: "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",
+    bgImageUrl: "assets/bg.jpg",
+    topImageUrl: "assets/top-image.jpg",
+    maxLoginAttempts: 5,
+    lockTime: 5 * 60 * 1000,
+    defaultPassword: "123456"
+};
+
+// ==================== 状态 ====================
+const STATE = {
+    isAdmin: false,
+    isVisitor: false,
+    currentFolder: "",
+    selectedImages: [],
+    lockedImages: [],
+    loginAttempts: Number(localStorage.getItem("loginAttempts") || 0),
+    lockEndTime: Number(localStorage.getItem("lockEndTime") || 0)
+};
+
+// ==================== DOM 元素 ====================
+const E = {
+    loginPage: document.getElementById("login-page"),
+    mainPage: document.getElementById("main-page"),
+    pwdInput: document.getElementById("password-input"),
+    loginBtn: document.getElementById("login-btn"),
+    visitor: document.getElementById("visitor-mode"),
+    daily: document.querySelector(".daily-word"),
+    totalImg: document.getElementById("total-images"),
+    time: document.getElementById("current-time"),
+    topImg: document.getElementById("top-specified-image"),
+    folderDetail: document.getElementById("folder-detail"),
+    folderTitle: document.getElementById("folder-title"),
+    imgGrid: document.getElementById("images-grid"),
+    backBtn: document.getElementById("back-btn"),
+    panel: document.getElementById("manage-panel"),
+    download: document.getElementById("download-selected"),
+    del: document.getElementById("delete-selected"),
+    selectAll: document.getElementById("select-all"),
+    lock: document.getElementById("lock-selected"),
+    cancel: document.getElementById("cancel-select")
+};
+
+// ==================== 初始化 ====================
+init();
+
+async function init() {
+    document.querySelector(".bg-container").style.backgroundImage = `url(${CONFIG.bgImageUrl})`;
+    E.topImg.src = CONFIG.topImageUrl;
+    await loadDailyWord();
+    updateTime();
+    setInterval(updateTime, 1000);
+    bind();
+    checkLock();
+}
+
+// ==================== 每日一言 ====================
+async function loadDailyWord() {
+    try {
+        const r = await ghGet("config/daily.json");
+        const d = r ? JSON.parse(atob(r.content)) : {t:"生活明朗，万物可爱"};
+        E.daily.textContent = d.t;
+        E.daily.onclick = async () => {
+            const t = prompt("新一言", d.t);
+            if(t) await ghPut("config/daily.json", btoa(JSON.stringify({t})), "base64");
+            E.daily.textContent = t;
+        };
+    } catch(e) {
+        E.daily.textContent = "生活明朗，万物可爱";
+    }
+}
+
+// ==================== 时间 ====================
+function updateTime() {
+    E.time.textContent = new Date().toLocaleString("zh-CN", {hour12:false});
+}
+
+// ==================== 事件绑定 ====================
+function bind() {
+    E.pwdInput.onkeydown = e => e.key === "Enter" && checkPwd();
+    E.loginBtn.onclick = checkPwd;
+    E.visitor.onclick = visitor;
+    E.backBtn.onclick = back;
+    E.download.onclick = downSel;
+    E.del.onclick = delSel;
+    E.selectAll.onclick = selAll;
+    E.lock.onclick = lockSel;
+    E.cancel.onclick = cancelSel;
+
+    document.querySelectorAll(".folder-card").forEach(c => {
+        c.onclick = () => openFolder(c.dataset.folder);
+        c.ondragover = e => {e.preventDefault(); c.style.border="2px solid #0066cc";};
+        c.ondragleave = () => c.style.border="2px solid #eee";
+        c.ondrop = async e => {
+            e.preventDefault();
+            c.style.border="2px solid #eee";
+            if(!STATE.isAdmin) return alert("仅管理员可上传");
+            for(let f of e.dataTransfer.files) {
+                if(f.type.startsWith("image/")) await upload(c.dataset.folder, f);
+            }
+            await refreshCard(c.dataset.folder);
+        };
+    });
+}
+
+// ==================== 密码验证 ====================
+async function checkPwd() {
+    if(Date.now() < STATE.lockEndTime) return alert(`锁定中，${Math.ceil((STATE.lockEndTime-Date.now())/6e4)}分钟后重试`);
+    const i = E.pwdInput.value.trim();
+    if(!i) return alert("请输入密码");
+    try {
+        const r = await ghGet("config/pwd.json");
+        const real = r ? JSON.parse(atob(r.content)).pwd : CONFIG.defaultPassword;
+        if(i === real) {
+            localStorage.setItem("loginAttempts", 0);
+            STATE.isAdmin = true;
+            enterMain();
+        } else {
+            STATE.loginAttempts++;
+            localStorage.setItem("loginAttempts", STATE.loginAttempts);
+            if(STATE.loginAttempts >= CONFIG.maxLoginAttempts) {
+                STATE.lockEndTime = Date.now() + CONFIG.lockTime;
+                localStorage.setItem("lockEndTime", STATE.lockEndTime);
+                alert("尝试过多，已锁定5分钟");
+            } else {
+                alert(`密码错误，剩余${CONFIG.maxLoginAttempts-STATE.loginAttempts}次`);
+            }
+        }
+    } catch(e) {
+        alert("验证失败");
+    }
+}
+
+// ==================== 访客模式 ====================
+async function visitor() {
+    await logVisitor();
+    STATE.isVisitor = true;
+    enterMain();
+}
+
+async function logVisitor() {
+    try {
+        const ip = await (await fetch("https://api.ipify.org?format=json")).json().then(d=>d.ip);
+        const t = new Date().toLocaleString();
+        const line = `\n- ${t} | ${ip}`;
+        let log = "# 访客日志";
+        const r = await ghGet("config/log.md");
+        if(r) log = atob(r.content);
+        await ghPut("config/log.md", btoa(log+line), "base64");
+    } catch(e){}
+}
+
+// ==================== 进入主页 ====================
+async function enterMain() {
+    E.loginPage.classList.remove("active");
+    E.mainPage.classList.add("active");
+    await loadLocked();
+    await calcTotal();
+    await refreshAllCards();
+    if(STATE.isVisitor) {
+        E.del.disabled = true;
+        E.lock.disabled = true;
+    }
+}
+
+// ==================== 文件夹操作 ====================
+async function openFolder(f) {
+    STATE.currentFolder = f;
+    E.folderTitle.textContent = `# ${f}`;
+    E.folderDetail.classList.add("active");
+    await loadImgs(f);
+}
+
+function back() {
+    E.folderDetail.classList.remove("active");
+    cancelSel();
+}
+
+// ==================== 图片加载 ====================
+async function loadImgs(f) {
+    E.imgGrid.innerHTML = "";
+    const fs = await ghList(`folders/${f}`);
+    fs.filter(x=>x.type=="file"&&/\.(jpg|jpeg|png|gif|webp)$/i.test(x.name)).forEach(file=>{
+        const u = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/main/folders/${f}/${file.name}`;
+        const p = `${f}/${file.name}`;
+        const it = document.createElement("div");
+        it.className="image-item";
+        it.dataset.path=p;
+        it.dataset.locked = STATE.lockedImages.includes(p);
+        it.innerHTML = `<img src="${u}">`;
+        it.onclick = () => {
+            E.panel.classList.add("active");
+            it.classList.toggle("selected");
+            if(it.classList.contains("selected")) STATE.selectedImages.push(p);
+            else STATE.selectedImages = STATE.selectedImages.filter(x=>x!==p);
+        };
+        E.imgGrid.appendChild(it);
+    });
+}
+
+// ==================== 多选操作 ====================
+function selAll() {
+    STATE.selectedImages = [];
+    document.querySelectorAll(".image-item").forEach(i=>{
+        i.classList.add("selected");
+        STATE.selectedImages.push(i.dataset.path);
+    });
+}
+
+async function downSel() {
+    if(!STATE.selectedImages.length) return alert("请选择图片");
+    const z = new JSZip();
+    for(let p of STATE.selectedImages) {
+        const [f,n] = p.split("/");
+        const u = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/main/folders/${f}/${n}`;
+        const b = await (await fetch(u)).blob();
+        z.file(n,b);
+    }
+    z.generateAsync({type:"blob"}).then(b=>saveAs(b,`图片_${Date.now()}.zip`));
+}
+
+async function delSel() {
+    if(!STATE.isAdmin) return alert("无权限");
+    if(!STATE.selectedImages.length) return alert("请选择图片");
+    if(!confirm("确定删除？不可恢复")) return;
+    for(let p of STATE.selectedImages) {
+        if(STATE.lockedImages.includes(p)) {
+            alert(p.split("/")[1]+"已锁定");
+            continue;
+        }
+        await ghDel(`folders/${p}`);
+        document.querySelector(`[data-path="${p}"]`).remove();
+    }
+    cancelSel();
+    await calcTotal();
+}
+
+async function lockSel() {
+    if(!STATE.isAdmin) return alert("无权限");
+    if(!STATE.selectedImages.length) return alert("请选择图片");
+    STATE.lockedImages = [...new Set([...STATE.lockedImages,...STATE.selectedImages])];
+    await ghPut("config/locked.json", btoa(JSON.stringify({list:STATE.lockedImages})), "base64");
+    STATE.selectedImages.forEach(p=>document.querySelector(`[data-path="${p}"]`).dataset.locked="true");
+    cancelSel();
+    alert("锁定成功");
+}
+
+function cancelSel() {
+    document.querySelectorAll(".image-item").forEach(i=>i.classList.remove("selected"));
+    STATE.selectedImages = [];
+    E.panel.classList.remove("active");
+}
+
+// ==================== 上传 ====================
+async function upload(f,file) {
+    const rd = new FileReader();
+    rd.readAsDataURL(file);
+    rd.onload = async () => {
+        const c = rd.result.split(",")[1];
+        await ghPut(`folders/${f}/${file.name}`, c, "base64");
+        alert("上传成功");
+        await loadImgs(f);
+        await calcTotal();
+    };
+}
+
+// ==================== 工具函数 ====================
+async function loadLocked() {
+    try {
+        const r = await ghGet("config/locked.json");
+        STATE.lockedImages = r ? JSON.parse(atob(r.content)).list : [];
+    } catch(e){STATE.lockedImages=[]}
+}
+
+async function calcTotal() {
+    let n=0;
+    for(let f of ["他人","好图","网图","花草","风景"]) {
+        n += (await ghList(`folders/${f}`)).length;
+    }
+    E.totalImg.textContent = `图片总数：${n}`;
+}
+
+async function refreshCard(f) {
+    const fs = await ghList(`folders/${f}`);
+    if(!fs.length) return;
+    fs.sort((a,b)=>new Date(b.updated_at)-new Date(a.updated_at));
+    const u = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/main/folders/${f}/${fs[0].name}`;
+    document.querySelector(`[data-folder="${f}"]`).style.backgroundImage = `url(${u})`;
+}
+
+async function refreshAllCards() {
+    for(let f of ["他人","好图","网图","花草","风景"]) await refreshCard(f);
+}
+
+function checkLock() {
+    if(Date.now() < STATE.lockEndTime) alert(`锁定中，${Math.ceil((STATE.lockEndTime-Date.now())/6e4)}分钟后重试`);
+}
+
+// ==================== GitHub API ====================
+async function ghGet(p) {
+    const r = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${p}`,{
+        headers:{Authorization:`token ${CONFIG.token}`}
+    });
+    return r.ok ? r.json() : null;
+}
+
+async function ghList(p) {
+    const r = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${p}`,{
+        headers:{Authorization:`token ${CONFIG.token}`}
+    });
+    return r.ok ? r.json() : [];
+}
+
+async function ghPut(p,c,e="utf-8") {
+    const old = await ghGet(p);
+    return await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${p}`,{
+        method:"PUT",
+        headers:{Authorization:`token ${CONFIG.token}`,"Content-Type":"application/json"},
+        body:JSON.stringify({message:`update ${p}`,content:c,encoding:e,sha:old?.sha})
+    });
+}
+
+async function ghDel(p) {
+    const old = await ghGet(p);
+    if(!old) return;
+    return await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${p}`,{
+        method:"DELETE",
+        headers:{Authorization:`token ${CONFIG.token}`,"Content-Type":"application/json"},
+        body:JSON.stringify({message:`delete ${p}`,sha:old.sha})
+    });
+}
+</script>
 </body>
 </html>
