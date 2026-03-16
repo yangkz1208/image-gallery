@@ -1,65 +1,26 @@
-/* 背景壁纸配置 - 80%透明度 */
+* { margin:0; padding:0; box-sizing:border-box; }
 body {
-    background-image: url('https://cdn.jsdelivr.net/gh/yangkz1208/image-gallery/bg.jpg');
-    background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-size: cover;
-    background-position: center;
-    /* 壁纸80%透明度（白色叠加层+混合模式） */
-    background-color: rgba(255, 255, 255, 0.8);
-    background-blend-mode: overlay;
+  min-height: 100vh;
+  background: linear-gradient(rgba(0,0,0,0.45),rgba(0,0,0,0.45)), url('./bg.jpg') center/cover fixed;
+  color: white;
+  font-family: system-ui;
 }
-
-/* 文件夹卡片样式 - 方形、中间文字、中高透明 */
-.folder-card {
-    width: 100%;
+#overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: flex; align-items: center; justify-content: center; z-index: 99;
 }
-
-.folder-card > div {
-    border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.7); /* 中高透明 */
-    backdrop-filter: blur(4px);
-    border: 1px solid rgba(200, 200, 200, 0.2);
+.login-box {
+  background: rgba(255,255,255,0.1); backdrop-filter: blur(20px); padding: 40px; border-radius: 30px; width: 380px; text-align: center; border: 1px solid rgba(255,255,255,0.3);
 }
-
-/* 图片卡片样式 */
-.image-card {
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+.login-box h1 { font-size: 36px; margin-bottom: 20px; }
+#pw { width: 100%; padding: 18px; font-size: 22px; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); border-radius: 9999px; text-align: center; }
+button { margin-top: 15px; width: 100%; padding: 16px; background: #10b981; border: none; border-radius: 9999px; font-size: 18px; }
+.links { margin-top: 20px; display: flex; gap: 30px; justify-content: center; }
+.links span { cursor: pointer; text-decoration: underline; }
+#folders {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; padding: 30px;
 }
-
-.image-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+.card {
+  background: rgba(39,39,42,0.8); border: 1px solid rgba(255,255,255,0.3); border-radius: 24px; overflow: hidden; cursor: pointer; transition: all 0.4s;
 }
-
-/* 加载中样式 */
-.loading {
-    display: inline-block;
-    width: 20px;
-    height: 20px;
-    border: 3px solid #fff;
-    border-radius: 50%;
-    border-top-color: #2196f3;
-    animation: spin 1s ease-in-out infinite;
-}
-
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
-
-/* 响应式适配 - 确保文件夹一排5个 */
-@media (min-width: 1280px) {
-    #folderGrid .grid {
-        grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
-    }
-}
-
-/* 优化DNG文件预览样式 */
-.preview-img[src*=".dng"] {
-    background-color: #f5f5f5;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #666;
-    font-size: 14px;
-}
+.card:hover { transform: scale(1.12) rotate(2deg); box-shadow: 0 0 30px lime; }
+header { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; background: rgba(0,0,0,0.6); }
