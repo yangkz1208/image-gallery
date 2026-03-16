@@ -1,36 +1,57 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<title>私人图片库 • yangkz1208</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="stylesheet" href="style.css">
-<script src="script.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>个人图片库</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
 </head>
 <body>
-  <!-- 密码页 -->
-  <div id="overlay">
-    <div class="login-box">
-      <h1>私人图库</h1>
-      <input id="pw" type="password" placeholder="输入密码">
-      <button onclick="checkPassword()">回车登录</button>
-      <div class="links">
-        <span onclick="changePassword()">更改密码</span>
-        <span onclick="guestMode()">访客模式</span>
+  <div class="bg-container"></div>
+
+  <!-- 登录页 -->
+  <div id="login-page" class="page active">
+    <div class="daily-word">加载中...</div>
+    <div class="password-container">
+      <input type="password" id="password-input" placeholder="请输入密码" class="password-input">
+      <div class="password-actions">
+        <span id="visitor-mode" class="action-text">访客模式</span>
       </div>
-      <div id="quoteMain"></div>
     </div>
   </div>
 
-  <!-- 主界面 -->
-  <div id="main" class="hidden">
-    <header>
-      <span id="imgCount">图片总数：128</span>
-      <span id="time"></span>
-      <div id="dailyQuote"></div>
-      <button onclick="logout()">退出</button>
-    </header>
-    <div id="folders" class="folder-grid"></div>
+  <!-- 主内容页 -->
+  <div id="main-page" class="page">
+    <div class="top-bar">
+      <span id="total-images">图片总数：0</span>
+      <span id="current-time">加载中...</span>
+    </div>
+    <div class="top-image-container">
+      <img id="top-specified-image" src="" alt="指定图片" class="top-image">
+    </div>
+    <div class="folders-grid">
+      <div class="folder-card" data-folder="folderA"><div class="folder-name">文件夹A</div></div>
+      <div class="folder-card" data-folder="folderB"><div class="folder-name">文件夹B</div></div>
+      <div class="folder-card" data-folder="folderC"><div class="folder-name">文件夹C</div></div>
+      <div class="folder-card" data-folder="folderD"><div class="folder-name">文件夹D</div></div>
+      <div class="folder-card" data-folder="folderE"><div class="folder-name">文件夹E</div></div>
+    </div>
+    <div id="folder-detail" class="folder-detail">
+      <button id="back-btn" class="back-btn">← 返回</button>
+      <div class="folder-title" id="folder-title"># 文件夹A</div>
+      <div class="images-grid" id="images-grid"></div>
+      <div id="manage-panel" class="manage-panel">
+        <button class="manage-btn" id="download-selected">下载</button>
+        <button class="manage-btn" id="delete-selected">删除</button>
+        <button class="manage-btn" id="select-all">全选</button>
+        <button class="manage-btn" id="lock-selected">锁定</button>
+        <button class="manage-btn" id="cancel-select">取消</button>
+      </div>
+    </div>
   </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
