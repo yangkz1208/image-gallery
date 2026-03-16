@@ -46,32 +46,65 @@ init();
 async function init() {
   document.querySelector(".bg-container").style.backgroundImage = `url(${CONFIG.bgImageUrl})`;
   E.topImg.src = CONFIG.topImageUrl;
-  await loadDailyWord();
+  await loadDailyWord(); // 调用修改后的每日一言函数
   updateTime(); setInterval(updateTime, 1000);
   bind();
   checkLock();
 }
 
-// 每日一言
+// 每日一言（方案2：调用API，刷新自动换）
 async function loadDailyWord() {
   try {
-    const r = await ghGet("config/daily.json");
-    const d = r ? JSON.parse(atob(r.content)) : {t:"生活明朗，万物可爱"};
-    E.daily.textContent = d.t;
+    // 调用免费的一言API（涵盖不同类型：动漫、名言、诗词等）
+    const res = await fetch("https://v1.hitokoto.cn/?c=a&c=b&c=c&c=d&c=e&c=f&c=h");
+    if (!res.ok) throw new Error("API请求失败");
+    const data = await res.json();
+    // 优先用API返回的句子，兜底用默认值
+    const hitokoto = data.hitokoto || "生活明朗，万物可爱";
+    
+    E.daily.textContent = hitokoto;
+
+    // 保留手动修改功能（修改后会覆盖API，刷新仍显示手动修改的内容）
     E.daily.onclick = async () => {
-      const t = prompt("新一言", d.t);
-      if(t) await ghPut("config/daily.json", btoa(JSON.stringify({t})), "base64");
-      E.daily.textContent = t;
+      const t = prompt("输入新的每日一言", hitokoto);
+      if(t) {
+        await ghPut("config/daily.json", btoa(JSON.stringify({t})), "base64");
+        E.daily.textContent = t;
+      }
     };
-  } catch(e) { E.daily.textContent = "生活明朗，万物可爱"; }
+  } catch(e) {
+    console.log("每日一言API调用失败，使用本地默认值：", e);
+    // API失效时，读取GitHub配置文件的内容，无则用默认值
+    try {
+      const r = await ghGet("config/daily.json");
+      const d = r ? JSON.parse(atob(r.content)) : {t:"生活明朗，万物可爱"};
+      E.daily.textContent = d.t;
+      E.daily.onclick = async () => {
+        const t = prompt("输入新的每日一言", d.t);
+        if(t) {
+          await ghPut("config/daily.json", btoa(JSON.stringify({t})), "base64");
+          E.daily.textContent = t;
+        }
+      };
+    } catch (err) {
+      E.daily.textContent = "生活明朗，万物可爱";
+      E.daily.onclick = async () => {
+        const t = prompt("输入新的每日一言", "生活明朗，万物可爱");
+        if(t) {
+          await ghPut("config/daily.json", btoa(JSON.stringify({t})), "base64");
+          E.daily.textContent = t;
+        }
+      };
+    }
+  }
 }
 
-// 时间
+// 实时时间更新
 function updateTime() {
   E.time.textContent = new Date().toLocaleString("zh-CN", {hour12:false});
 }
 
-// 绑定事件
+// 事件绑定
 function bind() {
   E.pwdInput.onkeydown = e => e.key==="Enter" && checkPwd();
   E.visitor.onclick = visitor;
@@ -95,7 +128,7 @@ function bind() {
   });
 }
 
-// 密码验证
+// 密码验证（防暴破）
 async function checkPwd() {
   if(Date.now() < STATE.lockEndTime) return alert(`锁定中，${Math.ceil((STATE.lockEndTime-Date.now())/6e4)}分钟后重试`);
   const i = E.pwdInput.value.trim();
@@ -118,13 +151,13 @@ async function checkPwd() {
   } catch(e) { alert("验证失败"); }
 }
 
-// 访客模式
+// 访客模式（记录IP+时间）
 async function visitor() {
   await logVisitor();
   STATE.isVisitor = true; enterMain();
 }
 
-// 访客日志
+// 访客日志记录
 async function logVisitor() {
   try {
     const ip = await (await fetch("https://api.ipify.org?format=json")).json().then(d=>d.ip);
@@ -134,10 +167,10 @@ async function logVisitor() {
     const r = await ghGet("config/log.md");
     if(r) log = atob(r.content);
     await ghPut("config/log.md", btoa(log+line), "base64");
-  } catch(e){}
+  } catch(e){console.log("访客日志记录失败：", e);}
 }
 
-// 进入主页
+// 进入主页面
 async function enterMain() {
   E.loginPage.classList.remove("active");
   E.mainPage.classList.add("active");
@@ -147,19 +180,21 @@ async function enterMain() {
   if(STATE.isVisitor) { E.del.disabled = true; E.lock.disabled = true; }
 }
 
-// 文件夹操作
+// 打开文件夹（中文分类）
 async function openFolder(f) {
   STATE.currentFolder = f;
   E.folderTitle.textContent = `# ${f}`;
   E.folderDetail.classList.add("active");
   await loadImgs(f);
 }
+
+// 返回主页面（带动画）
 function back() {
   E.folderDetail.classList.remove("active");
   cancelSel();
 }
 
-// 图片加载/选择
+// 加载文件夹内图片
 async function loadImgs(f) {
   E.imgGrid.innerHTML = "";
   const fs = await ghList(`folders/${f}`);
@@ -180,7 +215,7 @@ async function loadImgs(f) {
   });
 }
 
-// 多选操作
+// 多选操作 - 全选
 function selAll() {
   STATE.selectedImages = [];
   document.querySelectorAll(".image-item").forEach(i=>{
@@ -188,6 +223,8 @@ function selAll() {
     STATE.selectedImages.push(i.dataset.path);
   });
 }
+
+// 多选操作 - 下载（打包ZIP）
 async function downSel() {
   if(!STATE.selectedImages.length) return alert("请选择图片");
   const z = new JSZip();
@@ -199,6 +236,8 @@ async function downSel() {
   }
   z.generateAsync({type:"blob"}).then(b=>saveAs(b,`图片_${Date.now()}.zip`));
 }
+
+// 多选操作 - 删除（仅管理员，锁定图片不可删）
 async function delSel() {
   if(!STATE.isAdmin) return alert("无权限");
   if(!STATE.selectedImages.length) return alert("请选择图片");
@@ -210,6 +249,8 @@ async function delSel() {
   }
   cancelSel(); await calcTotal();
 }
+
+// 多选操作 - 锁定图片
 async function lockSel() {
   if(!STATE.isAdmin) return alert("无权限");
   if(!STATE.selectedImages.length) return alert("请选择图片");
@@ -218,12 +259,14 @@ async function lockSel() {
   STATE.selectedImages.forEach(p=>document.querySelector(`[data-path="${p}"]`).dataset.locked="true");
   cancelSel(); alert("锁定成功");
 }
+
+// 取消多选状态
 function cancelSel() {
   document.querySelectorAll(".image-item").forEach(i=>i.classList.remove("selected"));
   STATE.selectedImages = []; E.panel.classList.remove("active");
 }
 
-// 上传
+// 拖放上传图片（仅管理员）
 async function upload(f,file) {
   const rd = new FileReader();
   rd.readAsDataURL(file);
@@ -235,18 +278,22 @@ async function upload(f,file) {
   };
 }
 
-// 工具
+// 加载锁定图片列表
 async function loadLocked() {
   try {
     const r = await ghGet("config/locked.json");
     STATE.lockedImages = r ? JSON.parse(atob(r.content)).list : [];
   } catch(e){STATE.lockedImages=[]}
 }
+
+// 计算总图片数（中文文件夹）
 async function calcTotal() {
   let n=0;
-  for(let f of ["folderA","folderB","folderC","folderD","folderE"]) n += (await ghList(`folders/${f}`)).length;
+  for(let f of ["他人","好图","网图","花草","风景"]) n += (await ghList(`folders/${f}`)).length;
   E.totalImg.textContent = `图片总数：${n}`;
 }
+
+// 刷新文件夹卡片背景（显示最新上传图片）
 async function refreshCard(f) {
   const fs = await ghList(`folders/${f}`);
   if(!fs.length) return;
@@ -254,26 +301,34 @@ async function refreshCard(f) {
   const u = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/main/folders/${f}/${fs[0].name}`;
   document.querySelector(`[data-folder="${f}"]`).style.backgroundImage = `url(${u})`;
 }
+
+// 刷新所有文件夹卡片背景
 async function refreshAllCards() {
-  for(let f of ["folderA","folderB","folderC","folderD","folderE"]) await refreshCard(f);
+  for(let f of ["他人","好图","网图","花草","风景"]) await refreshCard(f);
 }
+
+// 检查登录锁定状态
 function checkLock() {
   if(Date.now() < STATE.lockEndTime) alert(`锁定中，${Math.ceil((STATE.lockEndTime-Date.now())/6e4)}分钟后重试`);
 }
 
-// GitHub API
+// GitHub API封装 - 获取文件
 async function ghGet(p) {
   const r = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${p}`,{
     headers:{Authorization:`token ${CONFIG.token}`}
   });
   return r.ok ? r.json() : null;
 }
+
+// GitHub API封装 - 列出文件夹文件
 async function ghList(p) {
   const r = await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${p}`,{
     headers:{Authorization:`token ${CONFIG.token}`}
   });
   return r.ok ? r.json() : [];
 }
+
+// GitHub API封装 - 创建/更新文件
 async function ghPut(p,c,e="utf-8") {
   const old = await ghGet(p);
   return await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${p}`,{
@@ -282,6 +337,8 @@ async function ghPut(p,c,e="utf-8") {
     body:JSON.stringify({message:`update ${p}`,content:c,encoding:e,sha:old?.sha})
   });
 }
+
+// GitHub API封装 - 删除文件
 async function ghDel(p) {
   const old = await ghGet(p);
   if(!old) return;
