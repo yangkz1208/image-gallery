@@ -8,203 +8,46 @@
     <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
     <style>
         * { margin:0; padding:0; box-sizing:border-box; }
-        body {
-            font-family: "Microsoft YaHei", sans-serif;
-            color: #333;
-            overflow: hidden;
-        }
-        .bg-container {
-            position: fixed;
-            inset: 0;
-            background-size: cover;
-            background-position: center;
-            z-index: -1;
-        }
-        /* ==================== 登录页面 ==================== */
-        #login-page {
-            position: fixed;
-            inset: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.4);
-            z-index: 100;
-        }
-        .login-box {
-            width: 380px;
-            padding: 40px 30px;
-            background: rgba(255,255,255,0.95);
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            text-align: center;
-        }
+        body { font-family: "Microsoft YaHei", sans-serif; color: #333; overflow: hidden; }
+        .bg-container { position: fixed; inset: 0; background-size: cover; background-position: center; z-index: -1; }
+        
+        /* 登录页面 */
+        #login-page { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); z-index: 100; }
+        .login-box { width: 380px; padding: 40px 30px; background: rgba(255,255,255,0.95); border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; }
         .login-box h1 { margin-bottom: 8px; font-size: 24px; }
         .login-box p { color: #666; margin-bottom: 20px; }
-        #password-input {
-            width: 100%;
-            padding: 14px;
-            margin: 20px 0;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-        #login-btn, #visitor-mode {
-            width: 100%;
-            padding: 14px;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            cursor: pointer;
-            margin-bottom: 12px;
-        }
-        #login-btn {
-            background: #0066cc;
-            color: white;
-        }
+        #password-input { width: 100%; padding: 14px; margin: 20px 0; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        #login-btn, #visitor-mode { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; margin-bottom: 12px; }
+        #login-btn { background: #0066cc; color: white; }
         #login-btn:hover { background: #0055aa; }
-        #visitor-mode {
-            background: #666;
-            color: white;
-        }
+        #visitor-mode { background: #666; color: white; }
         .login-tips { font-size: 13px; color: #999; }
 
-        /* ==================== 主页面 ==================== */
-        #main-page {
-            display: none;
-            height: 100vh;
-            flex-direction: column;
-        }
-        header {
-            padding: 15px 30px;
-            background: rgba(255,255,255,0.9);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        #top-specified-image {
-            height: 60px;
-            border-radius: 8px;
-        }
-        .info {
-            text-align: right;
-        }
-        .daily-word {
-            font-size: 15px;
-            color: #0066cc;
-            cursor: pointer;
-        }
-        .folders {
-            flex: 1;
-            padding: 30px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 25px;
-        }
-        .folder-card {
-            height: 180px;
-            background-size: cover;
-            background-position: center;
-            border-radius: 12px;
-            border: 2px solid #eee;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 22px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 0 2px 8px rgba(0,0,0,0.6);
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .folder-card:hover {
-            transform: scale(1.05);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-        }
+        /* 主页面 */
+        #main-page { display: none; height: 100vh; flex-direction: column; }
+        header { padding: 15px 30px; background: rgba(255,255,255,0.9); display: flex; align-items: center; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        #top-specified-image { height: 60px; border-radius: 8px; }
+        .info { text-align: right; }
+        .daily-word { font-size: 15px; color: #0066cc; cursor: pointer; }
+        .folders { flex: 1; padding: 30px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; }
+        .folder-card { height: 180px; background-size: cover; background-position: center; border-radius: 12px; border: 2px solid #eee; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; color: white; text-shadow: 0 2px 8px rgba(0,0,0,0.6); cursor: pointer; transition: all 0.3s; }
+        .folder-card:hover { transform: scale(1.05); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
 
-        /* ==================== 文件夹详情页 ==================== */
-        #folder-detail {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.95);
-            display: none;
-            flex-direction: column;
-        }
+        /* 文件夹详情页 */
+        #folder-detail { position: fixed; inset: 0; background: rgba(0,0,0,0.95); display: none; flex-direction: column; }
         #folder-detail.active { display: flex; }
-        #back-btn {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px 20px;
-            background: #fff;
-            color: #333;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-        #folder-title {
-            color: white;
-            text-align: center;
-            padding: 70px 20px 20px;
-            font-size: 28px;
-        }
-        #images-grid {
-            flex: 1;
-            padding: 20px;
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 15px;
-            overflow-y: auto;
-        }
-        .image-item {
-            border-radius: 8px;
-            overflow: hidden;
-            position: relative;
-            cursor: pointer;
-            border: 3px solid transparent;
-        }
-        .image-item img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-        }
-        .image-item.selected {
-            border-color: #0066cc;
-        }
-        .image-item[data-locked="true"]::after {
-            content: "🔒";
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,0,0,0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-        }
+        #back-btn { position: absolute; top: 20px; left: 20px; padding: 10px 20px; background: #fff; color: #333; border: none; border-radius: 6px; cursor: pointer; }
+        #folder-title { color: white; text-align: center; padding: 70px 20px 20px; font-size: 28px; }
+        #images-grid { flex: 1; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; overflow-y: auto; }
+        .image-item { border-radius: 8px; overflow: hidden; position: relative; cursor: pointer; border: 3px solid transparent; }
+        .image-item img { width: 100%; height: 180px; object-fit: cover; }
+        .image-item.selected { border-color: #0066cc; }
+        .image-item[data-locked="true"]::after { content: "🔒"; position: absolute; top: 10px; right: 10px; background: rgba(255,0,0,0.8); color: white; padding: 4px 8px; border-radius: 4px; font-size: 12px; }
 
-        /* ==================== 管理面板 ==================== */
-        #manage-panel {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.95);
-            padding: 12px 20px;
-            border-radius: 12px;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
-            display: none;
-            gap: 10px;
-            z-index: 200;
-        }
+        /* 管理面板 */
+        #manage-panel { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(255,255,255,0.95); padding: 12px 20px; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.3); display: none; gap: 10px; z-index: 200; }
         #manage-panel.active { display: flex; }
-        #manage-panel button {
-            padding: 10px 18px;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-        }
+        #manage-panel button { padding: 10px 18px; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; }
         #download-selected { background:#28a745; color:white; }
         #delete-selected { background:#dc3545; color:white; }
         #select-all { background:#17a2b8; color:white; }
@@ -216,19 +59,19 @@
 
 <div class="bg-container"></div>
 
-<!-- ==================== 登录页面 ==================== -->
+<!-- 登录页面 -->
 <div id="login-page" class="active">
     <div class="login-box">
         <h1>管理员登录</h1>
         <p>请输入密码进入管理模式</p>
-        <input id="password-input" type="password" placeholder="输入管理员密码" autocomplete="off">
+        <input id="password-input" type="password" placeholder="输入管理员密码" autocomplete="off" autofocus>
         <button id="login-btn">登录</button>
         <button id="visitor-mode">访客模式</button>
         <div class="login-tips">提示：连续5次输错密码将锁定5分钟</div>
     </div>
 </div>
 
-<!-- ==================== 主页面 ==================== -->
+<!-- 主页面 -->
 <div id="main-page">
     <header>
         <img id="top-specified-image" src="assets/top-image.jpg" alt="顶部图片">
@@ -238,7 +81,6 @@
             <div id="total-images">图片总数：0</div>
         </div>
     </header>
-
     <div class="folders">
         <div class="folder-card" data-folder="他人">他人</div>
         <div class="folder-card" data-folder="好图">好图</div>
@@ -248,14 +90,14 @@
     </div>
 </div>
 
-<!-- ==================== 文件夹详情页 ==================== -->
+<!-- 文件夹详情页 -->
 <div id="folder-detail">
     <button id="back-btn">← 返回</button>
     <h2 id="folder-title"># 文件夹</h2>
     <div id="images-grid"></div>
 </div>
 
-<!-- ==================== 管理面板 ==================== -->
+<!-- 管理面板 -->
 <div id="manage-panel">
     <button id="download-selected">📥 下载选中</button>
     <button id="delete-selected">🗑 删除选中</button>
@@ -311,9 +153,8 @@ const E = {
     cancel: document.getElementById("cancel-select")
 };
 
-// ==================== 初始化 ====================
+// ==================== 初始化（已修复自动聚焦） ====================
 init();
-
 async function init() {
     document.querySelector(".bg-container").style.backgroundImage = `url(${CONFIG.bgImageUrl})`;
     E.topImg.src = CONFIG.topImageUrl;
@@ -322,6 +163,7 @@ async function init() {
     setInterval(updateTime, 1000);
     bind();
     checkLock();
+    E.pwdInput.focus();   // ← 自动聚焦密码框
 }
 
 // ==================== 每日一言 ====================
@@ -593,7 +435,7 @@ async function ghPut(p,c,e="utf-8") {
 async function ghDel(p) {
     const old = await ghGet(p);
     if(!old) return;
-    return await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/contents/${p}`,{
+    return await fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG/repo}/contents/${p}`,{
         method:"DELETE",
         headers:{Authorization:`token ${CONFIG.token}`,"Content-Type":"application/json"},
         body:JSON.stringify({message:`delete ${p}`,sha:old.sha})
